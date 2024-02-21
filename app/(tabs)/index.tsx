@@ -28,7 +28,7 @@ export default function TabOneScreen() {
   }
 
   function keyTurn(lockedState:boolean) {
-    const keyToUse = encryptionKey || keyGen();
+    encryptionKey ? encryptionKey : keyGen();
     if (lockedState) {
       keyUnlock();
     } else {
