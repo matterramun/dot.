@@ -3,36 +3,38 @@ import CryptoES from 'crypto-es';
 
 import { Button, Pressable, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
+import { WordArray } from 'crypto-es/lib/core';
 
 export default function TabOneScreen() {
   const [keystring, setKeystring] = React.useState('test');
   const [data, setData] = React.useState('Create an encrypted-at-rest local data storage for tracking your period and other uterine and pregnancy health metrics for use by all women, especially those in states with regressive abortion legislation.')
   const [lockedState, setLockedState] = React.useState(false)
   const [encryptionKey, setEncryptionKey] = React.useState('')
-  function keyTurn (lockedState:boolean) {
-    encryptionKey == '' ? setKeystring(keyGen()) : null ;
-    if (lockedState == true){
-      keyUnlock()
-      setLockedState(false)
-      console.log(lockedState)
-    } else {
-      keyLock()
-      setLockedState(true)
-      console.log(lockedState)
-    }
-    function keyUnlock () {
-      const unlockedData = 'Create an encrypted-at-rest local data storage for tracking your period and other uterine and pregnancy health metrics for use by all women, especially those in states with regressive abortion legislation. Unlocked'
-      return setData(unlockedData)
-    }
-    function keyLock () {
-      const lockData = CryptoES.AES.encrypt(data, keystring).toString()
-      return setData(lockData)
-    }
-
+  function keyGen() {
+    const newKey = CryptoES.lib.WordArray.random(256 / 8).toString();
+    setEncryptionKey(newKey);
+    return newKey;
   }
-  function keyGen () {
-    setEncryptionKey(CryptoES.lib.WordArray.random(256 / 8).toString());
-    return encryptionKey
+
+  function keyLock() {
+    const lockData = CryptoES.AES.encrypt(data, keystring).toString();
+    setData(lockData);
+  }
+
+  function keyUnlock() {
+    const unlockedWordArray = CryptoES.AES.decrypt(data, encryptionKey);
+    const unlockedData = unlockedWordArray.toString(CryptoES.enc.Utf8);
+    setData(unlockedData);
+  }
+
+  function keyTurn(lockedState:boolean) {
+    const keyToUse = encryptionKey || keyGen();
+    if (lockedState) {
+      keyUnlock();
+    } else {
+      keyLock();
+    }
+    setLockedState(!lockedState);
   }
   
   return (
