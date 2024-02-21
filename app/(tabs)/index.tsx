@@ -6,35 +6,44 @@ import { Text, View } from '@/components/Themed';
 import { WordArray } from 'crypto-es/lib/core';
 
 export default function TabOneScreen() {
-  const [keystring, setKeystring] = React.useState('test');
+  const [secret, setSecret] = React.useState('frog');
   const [data, setData] = React.useState('Create an encrypted-at-rest local data storage for tracking your period and other uterine and pregnancy health metrics for use by all women, especially those in states with regressive abortion legislation.')
   const [lockedState, setLockedState] = React.useState(false)
-  const [encryptionKey, setEncryptionKey] = React.useState('')
-  function keyGen() {
-    const newKey = CryptoES.lib.WordArray.random(256 / 8).toString();
-    setEncryptionKey(newKey);
-    return newKey;
+  const [iv, setIv] = React.useState<CryptoES.lib.WordArray>(CryptoES.lib.WordArray.create());
+  
+  function keyTurn(isLocked: boolean, inputData: string, inputSecret: string) {
+    isLocked ? decrypt(inputData, inputSecret) : encrypt(inputData, inputSecret);
+    console.log(isLocked);
   }
 
-  function keyLock() {
-    const lockData = CryptoES.AES.encrypt(data, keystring).toString();
-    setData(lockData);
+  function encrypt(plaintext: string, secret: string) {
+    let key = CryptoES.enc.Utf8.parse(secret);
+    var newIv = CryptoES.lib.WordArray.create(key.words.slice(0, 4));
+    setIv(newIv);
+    console.log("New IV :" + CryptoES.enc.Base64.stringify(newIv));
+
+    const cipherData = CryptoES.AES.encrypt(plaintext, key, {
+      iv: newIv,
+      mode: CryptoES.mode.CBC,
+      padding: CryptoES.pad.Pkcs7
+    });
+    setLockedState(true);
+    setData(cipherData.toString());
+    return cipherData.toString();
   }
 
-  function keyUnlock() {
-    const unlockedWordArray = CryptoES.AES.decrypt(data, encryptionKey);
-    const unlockedData = unlockedWordArray.toString(CryptoES.enc.Utf8);
-    setData(unlockedData);
-  }
+  function decrypt(cipherData: string, secret: string) {
+    let key = CryptoES.enc.Utf8.parse(secret);
+    let cipherBytes = CryptoES.enc.Base64.parse(cipherData);
 
-  function keyTurn(lockedState:boolean) {
-    encryptionKey ? encryptionKey : keyGen();
-    if (lockedState) {
-      keyUnlock();
-    } else {
-      keyLock();
-    }
-    setLockedState(!lockedState);
+    var decrypted = CryptoES.AES.decrypt({ ciphertext: cipherBytes }, key, {
+      iv: iv,
+      mode: CryptoES.mode.CBC,
+      padding: CryptoES.pad.Pkcs7
+    });
+    setLockedState(false);
+    setData(decrypted.toString(CryptoES.enc.Utf8));
+    return decrypted.toString(CryptoES.enc.Utf8);
   }
   
   return (
@@ -43,10 +52,10 @@ export default function TabOneScreen() {
       <Text>POC to Create and store a key</Text>
       {/* sets a key and locks provided data */}
       <Pressable style={Object.assign({backgroundColor:'blue'}, styles.button)}>
-        <Text style={styles.buttontext} onPress={() => keyTurn(lockedState)}>Turn Key</Text>
+        <Text style={styles.buttontext} onPress={() => keyTurn(lockedState, data, secret)}>Turn Key</Text>
       </Pressable>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <Text>{encryptionKey}</Text>
+      <Text>testing...</Text>
       <Text style={{width:'90%'}}>{data}</Text>
     </View>
   );
