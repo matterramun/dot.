@@ -1,7 +1,7 @@
 # A Privacy Period App
 
 ## Mission
-Create an encrypted-at-rest local data storage for tracking your period and other uterine and pregnancy health metrics for use by all women, especially those in states with regressive abortion legislation.
+Create an encrypted-at-rest local data storage for tracking your period and other uterine and pregnancy health metrics for use by all menstruating people, especially those in states with regressive abortion legislation.
 
 ## Tasks
 Add a....
