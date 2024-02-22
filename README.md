@@ -25,6 +25,3 @@ You should then be able to access via browser or mobile device by using the expo
 
 ## Designs
 image
-
-## Names
-Privates.
