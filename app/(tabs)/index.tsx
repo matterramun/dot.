@@ -1,9 +1,8 @@
 import * as React from 'react';
 import CryptoES from 'crypto-es';
 
-import { Button, Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { WordArray } from 'crypto-es/lib/core';
 
 export default function TabOneScreen() {
   const [secret, setSecret] = React.useState('frog');
